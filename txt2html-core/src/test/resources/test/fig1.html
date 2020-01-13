@@ -1,0 +1,98 @@
+    <defs>
+      <marker id="head" markerWidth="4" markerHeight="4"
+        style="fill:rgb(220,220,220)"
+        orient="auto" refY="2">
+        <path d="M0,0 L4,2 0,4" />
+      </marker>
+    </defs>
+
+    <polyline
+      points="200,20 90,20 90,100 220,100 220,40 200,20 200,40 220,40"
+      style="fill:none;stroke:black;stroke-width:1"
+    />
+    <text>
+      <tspan x="125" y="55">.java files</tspan>
+      <tspan x="110" y="70">on command line</tspan>
+    </text>
+
+    <line
+      x1="155" y1="100" x2="155" y2="180"
+      style="stroke:rgb(220,220,220);stroke-width:4"
+      marker-end='url(#head)'
+    />
+    <text>
+      <tspan x="125" y="130">parsed by</tspan>
+      <tspan x="120" y="145">o.c.j.Parser</tspan>
+      <tspan x="140" y="160">into</tspan>
+    </text>
+
+    <polygon
+      points="40,195 270,195 270,433 40,433"
+      style="fill:none;stroke:black;stroke-width:1"
+    />
+    <line
+      x1="40" y1="220" x2="270" y2="220"
+      style="stroke:rgb(0,0,0)"
+    />
+    <text>
+      <tspan x="50" y="212">Java.CompilationUnit</tspan>
+      <tspan x="50" y="240">Java.PackageMemberTypeDeclaration[]</tspan>
+      <tspan x="60" y="255">Java.Annotation[]</tspan>
+      <tspan x="60" y="270">Java.TypeParameter[]</tspan>
+      <tspan x="60" y="285">Java.FieldDeclaration[]</tspan>
+      <tspan x="70" y="300"> Java.Annotation[]</tspan>
+      <tspan x="60" y="315">Java.MemberTypeDeclaration[]</tspan>
+      <tspan x="70" y="330">...</tspan>
+      <tspan x="60" y="345">Java.ConstructorDeclarator[]</tspan>
+      <tspan x="70" y="360">...</tspan>
+      <tspan x="60" y="375">Java.MethodDeclarator[]</tspan>
+      <tspan x="70" y="390">Java.Annotation[]</tspan>
+      <tspan x="70" y="405">Java.TypeParameter[]</tspan>
+      <tspan x="70" y="420">Java.BlockStatements[]</tspan>
+    </text>
+
+    <line
+      x1="270" y1="320" x2="430" y2="320"
+      style="stroke:rgb(220,220,220);stroke-width:4"
+      marker-end='url(#head)'
+    />
+    <text>
+      <tspan x="325" y="310">compiled by</tspan>
+      <tspan x="300" y="325">o.c.j.UnitCompiler</tspan>
+      <tspan x="340" y="340">into</tspan>
+    </text>
+
+    <polygon
+      points="445,195 675,195 675,433 445,433"
+      style="fill:none;stroke:black;stroke-width:1"
+    />
+    <line
+      x1="445" y1="220" x2="675" y2="220"
+      style="stroke:rgb(0,0,0)"
+    />
+    <text>
+      <tspan x="455" y="212">o.c.j.util.ClassFile</tspan>
+      <tspan x="455" y="240">ClassFile.AttributeInfo[]</tspan>
+      <tspan x="455" y="255">ClassFile.FieldInfo[]</tspan>
+      <tspan x="465" y="270">ClassFile.AttributeInfo[]</tspan>
+      <tspan x="455" y="285">ClassFile.MethodInfo[]</tspan>
+      <tspan x="465" y="300">ClassFile.AttributeInfo[]</tspan>
+    </text>
+
+    <line
+      x1="560" y1="195" x2="560" y2="115"
+      style="stroke:rgb(220,220,220);stroke-width:4"
+      marker-end='url(#head)'
+    />
+    <text>
+      <tspan x="530" y="155">written to</tspan>
+    </text>
+
+    <polyline
+      points="605,20 495,20 495,100 625,100 625,40 605,20 605,40 625,40"
+      style="fill:none;stroke:black;stroke-width:1"
+    />
+    <text>
+      <tspan x="520" y="55">.class files</tspan>
+      <tspan x="525" y="70">in dest dir</tspan>
+    </text>
