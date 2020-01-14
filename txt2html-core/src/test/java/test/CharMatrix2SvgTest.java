@@ -25,25 +25,26 @@
 
 package test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
 
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+import org.junit.Ignore;
+import org.junit.Test;
 
+import de.unkrig.commons.io.Readers;
 import de.unkrig.txt2html.CharMatrix;
 import de.unkrig.txt2html.CharMatrix2Svg;
 
+public
 class CharMatrix2SvgTest {
 
-    @Test void fig1Test() throws IOException {
+    @Ignore @Test public void
+    fig1Test() throws IOException {
         CharMatrix cm = CharMatrix.read(this.getClass().getResource("fig1.txt"));
         StringWriter sw = new StringWriter();
         new CharMatrix2Svg(sw).convert(cm.copy());
@@ -62,25 +63,14 @@ class CharMatrix2SvgTest {
         String charsetName = conn.getContentEncoding();
         if (charsetName == null) charsetName = "UTF-8";
         
-        try (Reader r = new InputStreamReader(conn.getInputStream(), charsetName)) {
-            return read(r);
-        }
-    }
-
-    private String
-    read(Reader r) throws IOException {
-        StringWriter sw = new StringWriter();
-        copy(r, sw);
-        return sw.toString();
-    }
-
-    private void
-    copy(Reader r, Writer w) throws IOException {
-        char[] buffer = new char[4096];
-        for (;;) {
-            int n = r.read(buffer);
-            if (n == -1) break;
-            w.write(buffer, 0, n);
+//        try (Reader r = new InputStreamReader(conn.getInputStream(), charsetName)) {
+//            return Readers.readAll(r);
+//        }
+        Reader r = new InputStreamReader(conn.getInputStream(), charsetName);
+        try {
+            return Readers.readAll(r);
+        } finally {
+            try { r.close(); } catch (Exception e) {}
         }
     }
 }
