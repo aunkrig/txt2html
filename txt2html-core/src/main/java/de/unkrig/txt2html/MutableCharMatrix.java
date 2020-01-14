@@ -30,12 +30,12 @@ interface MutableCharMatrix extends CharMatrix {
 
     void charAt(int x, int y, char c);
 
-    public default MutableCharMatrix
+    default MutableCharMatrix
     subMatrix(int x, int y, int width, int height) {
         
         if (x == 0 && y == 0 && width == this.width() && height == this.height()) return this;
         
-        if (x + width  > this.width())  throw new IndexOutOfBoundsException("x=" + x + ", width="  + width  + ", outer width="  + this.width());
+        if (x + width  > this.width())  throw new IndexOutOfBoundsException("x=" + x + ", width="  + width  + ", outer width="  + this.width()); // SUPPRESS CHECKSTYLE LineLength:1
         if (y + height > this.height()) throw new IndexOutOfBoundsException("y=" + y + ", height=" + height + ", outer height=" + this.height());
         if (width < 0)                  throw new IndexOutOfBoundsException("width=" + width);
         if (height < 0)                 throw new IndexOutOfBoundsException("height=" + height);
@@ -50,8 +50,8 @@ interface MutableCharMatrix extends CharMatrix {
             @Override public int
             height() { return height; }
 
-            @Override
-            public char charAt(int x, int y) {
+            @Override public char
+            charAt(int x, int y) {
                 if (x < 0)       throw new IndexOutOfBoundsException();
                 if (x >= width)  throw new IndexOutOfBoundsException();
                 if (y < 0)       throw new IndexOutOfBoundsException();
@@ -59,8 +59,8 @@ interface MutableCharMatrix extends CharMatrix {
                 return MutableCharMatrix.this.charAt(xOffset + x, yOffset + y);
             }
 
-            @Override
-            public String toString() { return this.toString2(); }
+            @Override public String
+            toString() { return this.toString2(); }
 
             @Override public void
             charAt(int x, int y, char c) {

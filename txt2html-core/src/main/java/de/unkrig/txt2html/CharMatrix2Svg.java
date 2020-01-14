@@ -149,8 +149,8 @@ class CharMatrix2Svg {
     };
     
     private static final ArtifactDetector DOWN_ARROW = (cm, x, y, cm2svg) -> {
-        final CharSequence vs = cm.verticalSection(x);
-        Matcher m = Pattern.compile("\\|[^\\-]*v").matcher(vs).region(y, vs.length());
+        CharSequence vs = cm.verticalSection(x);
+        Matcher      m  = Pattern.compile("\\|[^\\-]*v").matcher(vs).region(y, vs.length());
         if (!m.lookingAt()) return false;
         cm2svg.arrow(x, y, x, m.end());
         for (int yy = y; yy < m.end(); yy++) {
@@ -160,8 +160,8 @@ class CharMatrix2Svg {
     };
     
     private static final ArtifactDetector UP_ARROW = (cm, x, y, cm2svg) -> {
-        final CharSequence vs = cm.verticalSection(x);
-        Matcher m = Pattern.compile("\\^[^\\-]*\\|").matcher(vs).region(y, vs.length());
+        CharSequence vs = cm.verticalSection(x);
+        Matcher      m  = Pattern.compile("\\^[^\\-]*\\|").matcher(vs).region(y, vs.length());
         if (!m.lookingAt()) return false;
         cm2svg.arrow(x, m.end(), x, y);
         for (int yy = y; yy < m.end(); yy++) {
@@ -171,8 +171,8 @@ class CharMatrix2Svg {
     };
     
     private static final ArtifactDetector LEFT_ARROW = (cm, x, y, cm2svg) -> {
-        final CharSequence hs = cm.horizontalSection(y);
-        Matcher m = Pattern.compile("<[^\\|]*-").matcher(hs).region(x, hs.length());
+        CharSequence hs = cm.horizontalSection(y);
+        Matcher      m  = Pattern.compile("<[^\\|]*-").matcher(hs).region(x, hs.length());
         if (!m.lookingAt()) return false;
         cm2svg.arrow(m.end(), y, x, y);
         for (int xx = x; xx < m.end(); xx++) {
@@ -182,8 +182,8 @@ class CharMatrix2Svg {
     };
     
     private static final ArtifactDetector RIGHT_ARROW = (cm, x, y, cm2svg) -> {
-        final CharSequence hs = cm.horizontalSection(y);
-        Matcher m = Pattern.compile("-[^\\|]*>").matcher(hs).region(x, hs.length());
+        CharSequence hs = cm.horizontalSection(y);
+        Matcher      m  = Pattern.compile("-[^\\|]*>").matcher(hs).region(x, hs.length());
         if (!m.lookingAt()) return false;
         cm2svg.arrow(x, y, m.end(), y);
         for (int xx = x; xx < m.end(); xx++) {
@@ -193,7 +193,7 @@ class CharMatrix2Svg {
     };
     
     private final PrintWriter pw;
-    private int currentXOffset = 5, currentYOffset = 1;
+    private int               currentXOffset = 5, currentYOffset = 1;
     
     public
     CharMatrix2Svg(Writer w) {
@@ -236,7 +236,12 @@ class CharMatrix2Svg {
 
     private void
     text(int x, int y, CharSequence cs) {
-        this.pw.printf("<text x=\"%d\" y=\"%d\">%s</text>%n", cellWidth / 2 + x2px(x), (3 * cellHeight) / 4 + y2px(y), sgmlEscape(cs));
+        this.pw.printf(
+            "<text x=\"%d\" y=\"%d\">%s</text>%n",
+            x2px(x) + cellWidth / 2,
+            y2px(y) + (3 * cellHeight) / 4,
+            sgmlEscape(cs)
+        );
     }
 
     private String
@@ -329,7 +334,7 @@ class CharMatrix2Svg {
             }
         }
         pw.printf(
-            "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" style=\"stroke:rgb(220,220,220);stroke-width:4\" marker-end='url(#head)' />%n",
+            "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" style=\"stroke:rgb(220,220,220);stroke-width:4\" marker-end='url(#head)' />%n", // SUPPRESS CHECKSTYLE LineLength
             x1px,
             y1px,
             x2px,
