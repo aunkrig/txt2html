@@ -362,9 +362,6 @@ class CharMatrix2Svg {
         return result;
     }
 
-    /**
-     * @param cm
-     */
     private void
     convert(MutableCharMatrix cm) {
         
