@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<antlib>
+
+	<!-- The ANTLIB file, as described in http://ant.apache.org/manual/Types/antlib.html. -->
+
+	<!-- org.apache.tools.ant.Task definitions. -->
+	<taskdef name="txt2html" classname="de.unkrig.txt2html.antlib.Txt2HtmlTask" />
+</antlib>
