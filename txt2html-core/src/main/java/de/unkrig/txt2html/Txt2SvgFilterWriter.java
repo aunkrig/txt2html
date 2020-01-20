@@ -1,39 +1,54 @@
+
 /*
- * Copyright 2020 SWM Services GmbH
+ * txt2html - Converts text to an HTML document
+ *
+ * Copyright (c) 2020 Arno Unkrig. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
+ *       products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 package de.unkrig.txt2html;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.util.regex.Pattern;
 
-import de.unkrig.commons.file.ExceptionHandler;
-import de.unkrig.commons.file.contentstransformation.ContentsTransformer;
-import de.unkrig.commons.file.filetransformation.FileContentsTransformer;
-import de.unkrig.commons.file.filetransformation.FileTransformations;
-import de.unkrig.commons.file.filetransformation.FileTransformer.Mode;
-import de.unkrig.commons.io.IoUtil;
 import de.unkrig.commons.text.pattern.PatternUtil;
 
 public
 class Txt2SvgFilterWriter {
     
-    private Txt2SvgFilterWriter() {}
+    private static final Pattern
+    PATTERN_ASCII_ART = Pattern.compile("<pre class=\"asciiart\"><code>\\.?([^<]*)</code></pre>");
 
+    /**
+     * @return Passes all text to <var>delegate</var>, except that "ASCII art" regions are transformed from {@code
+     *         <pre>} to {@code <svg>}.
+     */
     public static Writer
     make(Writer delegate) {
-        
+
+        // Find all occurrences of ASCII art, and convert it into SVG on-the-fly.
         return PatternUtil.replaceAllFilterWriter(
-            Pattern.compile("<pre class=\"asciiart\"><code>\\.?([^<]*)</code></pre>"),          // pattern
-            mr -> {                                                                             // matchReplacer
+            PATTERN_ASCII_ART, // pattern
+            mr -> {            // matchReplacer
                 String text = mr.group(1);
                 text = text.replace("&lt;",   "<");
                 text = text.replace("&gt;",   ">");
@@ -44,23 +59,7 @@ class Txt2SvgFilterWriter {
                 new CharMatrix2Svg(sw).convert(CharMatrix.read(new StringReader(text)));
                 return sw.toString();
             },
-            delegate                                                                            // delegate
+            delegate           // delegate
         );
-    }
-    
-    public static void
-    main(String[] args) throws IOException {
-        boolean keepOriginals = true;
-        Charset charset = Charset.forName("UTF-8");
-        FileTransformations.transform(args, new FileContentsTransformer(new ContentsTransformer() {
-            
-            @Override public void
-            transform(String path, InputStream is, OutputStream os) throws IOException {
-                IoUtil.copy(
-                    new InputStreamReader(is, charset),       // reader
-                    make(new OutputStreamWriter(os, charset)) // writer
-                );
-            }
-        }, keepOriginals), Mode.TRANSFORM, ExceptionHandler.defaultHandler());
     }
 }
