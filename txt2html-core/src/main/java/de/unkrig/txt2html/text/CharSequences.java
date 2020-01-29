@@ -23,10 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package de.unkrig.txt2html;
+package de.unkrig.txt2html.text;
 
 public class CharSequences {
 
+    /**
+     * A generic implementation of {@link CharSequence#subSequence(int, int)}.
+     */
     public static CharSequence
     subSequence(CharSequence cs, int start, int end) {
         
@@ -48,6 +51,25 @@ public class CharSequences {
             @Override public char
             charAt(int index) { return cs.charAt(start + index); }
 
+            @Override public String
+            toString() { return CharSequences.toString(this); }
+        };
+    }
+    
+    public static CharSequence
+    reverseOf(CharSequence cs) {
+        
+        return new CharSequence() {
+            
+            @Override public CharSequence
+            subSequence(int start, int end) { return CharSequences.subSequence(this, start, end); }
+            
+            @Override public int
+            length() { return cs.length(); }
+            
+            @Override public char
+            charAt(int index) { return cs.charAt(cs.length() - index - 1); }
+            
             @Override public String
             toString() { return CharSequences.toString(this); }
         };

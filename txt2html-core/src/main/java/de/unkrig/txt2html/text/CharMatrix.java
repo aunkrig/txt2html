@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package de.unkrig.txt2html;
+package de.unkrig.txt2html.text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,14 +33,152 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public
-interface CharMatrix {
+import de.unkrig.commons.lang.AssertionUtil;
+import de.unkrig.commons.nullanalysis.Nullable;
 
-    public int width();
+public abstract
+class CharMatrix {
     
-    public int height();
+    static { AssertionUtil.enableAssertionsForThisClass(); }
+
+    public enum Orientation {
+        NORTH, EAST, SOUTH, WEST,
+        ;
+        
+        private Orientation      opposite;
+        private Set<Orientation> others;
+        
+        static {
+            NORTH.opposite = SOUTH;
+            EAST.opposite  = WEST;
+            SOUTH.opposite = NORTH;
+            WEST.opposite  = EAST;
+            NORTH.others = Collections.unmodifiableSet(EnumSet.complementOf(EnumSet.of(NORTH)));
+            EAST.others  = Collections.unmodifiableSet(EnumSet.complementOf(EnumSet.of(EAST)));
+            SOUTH.others = Collections.unmodifiableSet(EnumSet.complementOf(EnumSet.of(SOUTH)));
+            WEST.others  = Collections.unmodifiableSet(EnumSet.complementOf(EnumSet.of(WEST)));
+        }
+        
+        public Orientation
+        opposite() { return this.opposite; }
+        
+        public Set<Orientation>
+        others() { return this.others; }
+    }
+
+    public
+    class Turtle {
+
+        private int         x, y;
+        private Orientation orientation = Orientation.EAST;
+
+        public
+        Turtle(int x, int y, Orientation orientation) { this.x = x; this.y = y; this.orientation = orientation; }
+
+        public Turtle
+        clone() { return new Turtle(this.x, this.y, this.orientation); }
+
+        public int
+        getX() { return this.x; }
+        
+        public int
+        getY() { return this.y; }
+        
+        public Orientation
+        getOrientation() { return this.orientation; }
+        
+        public char
+        charAt() { return CharMatrix.this.charAt(this.x, this.y); }
+
+        public CharMatrix
+        getCharMatrix() { return CharMatrix.this; }
+
+        public void
+        setX(int x) {
+            assert x >= 0;
+            assert x < CharMatrix.this.width();
+            this.x = x;
+        }
+        
+        public void
+        setY(int y) {
+            assert y >= 0;
+            assert y < CharMatrix.this.height();
+            this.y = y;
+        }
+
+        public void
+        setOrientation(Orientation orientation) { this.orientation = orientation; }
+        
+        public void
+        forward(int n) {
+            switch (this.orientation) {
+            case NORTH: this.setY(this.y - n); return; 
+            case EAST:  this.setX(this.x + n); return;
+            case SOUTH: this.setY(this.y + n); return;
+            case WEST:  this.setX(this.x - n); return;
+            default:    throw new AssertionError(this);
+            }
+        }
+        
+        @Nullable public MatchResult
+        forward(Pattern pattern) {
+            switch (this.orientation) {
+                case NORTH: 
+                {
+                    Matcher m = pattern.matcher((
+                        CharSequences.reverseOf(CharMatrix.this.verticalSection(this.x).subSequence(0, this.y))
+                        .toString()
+                    ));
+                    if (!m.lookingAt()) return null;
+                    this.y -= m.end();
+                    return m;
+                }
+            case EAST:
+                {
+                    CharSequence hs = CharMatrix.this.horizontalSection(this.y);
+                    Matcher      m  = pattern.matcher(hs).region(this.x + 1, hs.length());
+                    if (!m.lookingAt()) return null;
+                    this.x = m.end() - 1;
+                    return m;
+                }
+            case SOUTH:
+                {
+                    CharSequence vs = CharMatrix.this.verticalSection(this.x);
+                    Matcher      m  = pattern.matcher(vs).region(this.y + 1, vs.length());
+                    if (!m.lookingAt()) return null;
+                    this.y = m.end() - 1;
+                    return m;
+                }
+            case WEST:
+                {
+                    Matcher m = pattern.matcher((
+                        CharSequences.reverseOf(CharMatrix.this.horizontalSection(this.y).subSequence(0, this.x))
+                        .toString()
+                    ));
+                    if (!m.lookingAt()) return null;
+                    this.x -= m.end();
+                    return m;
+                }
+            default:    throw new AssertionError(this);
+            }
+        }
+
+        @Override public String
+        toString() { return "x=" + this.x + ", y=" + this.y + ", orientation=" + this.orientation; }
+    }
+    
+    public abstract int width();
+    
+    public abstract int height();
 
     /**
      * @throws IndexOutOfBoundsException <var>x</var> {@code < 0}
@@ -48,9 +186,9 @@ interface CharMatrix {
      * @throws IndexOutOfBoundsException <var>y</var> {@code < 0}
      * @throws IndexOutOfBoundsException <var>y</var> {@code >= height()}
      */
-    public char charAt(int x, int y);
+    public abstract char charAt(int x, int y);
 
-    public default CharMatrix
+    public CharMatrix
     subMatrix(int x, int y, int width, int height) {
         
         if (x == 0 && y == 0 && width == this.width() && height == this.height()) return this;
@@ -76,13 +214,10 @@ interface CharMatrix {
                 if (y < 0 || y >= height) throw new IndexOutOfBoundsException();
                 return CharMatrix.this.charAt(xOffset + x, yOffset + y);
             }
-
-            @Override
-            public String toString() { return this.toString2(); }
         };
     }
     
-    public default CharSequence
+    public CharSequence
     horizontalSection(int y) {
         
         return new CharSequence() {
@@ -103,7 +238,7 @@ interface CharMatrix {
         };
     }
     
-    public default CharSequence
+    public CharSequence
     verticalSection(int x) {
         
         return new CharSequence() {
@@ -125,7 +260,7 @@ interface CharMatrix {
     /**
      * @return A deep copy of this {@link CharMatrix}
      */
-    public default MutableCharMatrix
+    public MutableCharMatrix
     copy() {
         
         char[][] caa = new char[this.height()][this.width()];
@@ -160,9 +295,6 @@ interface CharMatrix {
                 if (y >= this.height()) throw new IndexOutOfBoundsException("y=" + y + ", height=" + this.height());
                 caa[y][x] = c;
             }
-
-            @Override public String
-            toString() { return this.toString2(); }
         };
     }
 
@@ -211,14 +343,14 @@ interface CharMatrix {
                 final String line = lines.get(y);
                 return x < line.length() ? line.charAt(x) : ' ';
             }
-
-            @Override public String
-            toString() { return this.toString2(); }
         };
     }
 
-    public default String
-    toString2() {
+    /**
+     * @return The text of this {@link CharMatrix}, with lines suffixed with {@code '\n'}
+     */
+    @Override public String
+    toString() {
         StringWriter sw = new StringWriter();
         for (int y = 0; y < this.height(); y++) {
             sw.append(this.horizontalSection(y)).append('\n');

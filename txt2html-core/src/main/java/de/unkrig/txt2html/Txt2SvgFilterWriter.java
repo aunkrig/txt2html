@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.util.regex.Pattern;
 
 import de.unkrig.commons.text.pattern.PatternUtil;
+import de.unkrig.txt2html.text.CharMatrix;
 
 public
 class Txt2SvgFilterWriter {

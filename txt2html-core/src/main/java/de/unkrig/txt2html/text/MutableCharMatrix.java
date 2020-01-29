@@ -23,14 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package de.unkrig.txt2html;
+package de.unkrig.txt2html.text;
 
-public
-interface MutableCharMatrix extends CharMatrix {
+public abstract
+class MutableCharMatrix extends CharMatrix {
 
-    void charAt(int x, int y, char c);
+    public abstract void
+    charAt(int x, int y, char c);
 
-    default MutableCharMatrix
+    public MutableCharMatrix
     subMatrix(int x, int y, int width, int height) {
         
         if (x == 0 && y == 0 && width == this.width() && height == this.height()) return this;
@@ -59,9 +60,6 @@ interface MutableCharMatrix extends CharMatrix {
                 return MutableCharMatrix.this.charAt(xOffset + x, yOffset + y);
             }
 
-            @Override public String
-            toString() { return this.toString2(); }
-
             @Override public void
             charAt(int x, int y, char c) {
                 if (x < 0)       throw new IndexOutOfBoundsException();
@@ -74,7 +72,7 @@ interface MutableCharMatrix extends CharMatrix {
 
     }
 
-    default void
+    public void
     fill(int x, int y, int width, int height, char c) {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {

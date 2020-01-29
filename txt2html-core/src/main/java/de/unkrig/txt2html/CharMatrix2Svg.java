@@ -30,11 +30,29 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.unkrig.commons.lang.AssertionUtil;
+import de.unkrig.txt2html.text.CharMatrix;
+import de.unkrig.txt2html.text.CharMatrix.Orientation;
+import de.unkrig.txt2html.text.CharMatrix.Turtle;
+import de.unkrig.txt2html.text.MutableCharMatrix;
+
 public
 class CharMatrix2Svg {
+    
+    static { AssertionUtil.enableAssertionsForThisClass(); }
+
+    // Starting from a table's corner, finds the next table corner below.
+    private static final Pattern PATTERN_TABLE_NEXT_CORNER_DOWN = Pattern.compile("\\|+\\+");
+    // Starting from a table's corner, finds the next table corner to the right.
+    private static final Pattern PATTERN_TABLE_NEXT_CORNER_RIGHT = Pattern.compile("-+\\+");
+
+    // Starting at a corner of an arrow ('+'), finds the next corner (or the root) of the arrow.
+    private static final Pattern PATTERN_NEXT_HORIZONAL_POLYGON_SEGMENT = Pattern.compile("[^|]*-\\+?");
+    private static final Pattern PATTERN_NEXT_VERTICAL_POLYGON_SEGMENT  = Pattern.compile("[^\\-]*\\|\\+?");
     
     private int cellWidth  = 6;
     private int cellHeight = 15;
@@ -66,8 +84,8 @@ class CharMatrix2Svg {
     private static final ArtifactDetector DOCUMENT_SYMBOL = (cm, x, y, cm2svg) -> {
         if (cm.charAt(x, y) != '+' || x + 3 > cm.width() || y + 3 > cm.height()) return false;
         
-        int[] hCorners = corners(cm.horizontalSection(y), x, Pattern.compile("-+\\+"));
-        int[] vCorners = corners(cm.verticalSection(x),   y, Pattern.compile("\\|+\\+"));
+        int[] hCorners = corners(cm.horizontalSection(y), x, PATTERN_TABLE_NEXT_CORNER_RIGHT);
+        int[] vCorners = corners(cm.verticalSection(x),   y, PATTERN_TABLE_NEXT_CORNER_DOWN);
 
         if (hCorners.length != 2 || vCorners.length != 2) return false;
         int x2 = hCorners[1];
@@ -106,8 +124,8 @@ class CharMatrix2Svg {
     private static final ArtifactDetector TABLE = (cm, x, y, cm2svg) -> {
         if (cm.charAt(x, y) != '+') return false;
         
-        int[] hCorners = corners(cm.horizontalSection(y), x, Pattern.compile("-+\\+"));
-        int[] vCorners = corners(cm.verticalSection(x),   y, Pattern.compile("\\|+\\+"));
+        int[] hCorners = corners(cm.horizontalSection(y), x, PATTERN_TABLE_NEXT_CORNER_RIGHT);
+        int[] vCorners = corners(cm.verticalSection(x),   y, PATTERN_TABLE_NEXT_CORNER_DOWN);
 
         if (hCorners.length < 2 || vCorners.length < 2) return false;
         
@@ -148,50 +166,105 @@ class CharMatrix2Svg {
         return true;
     };
     
+    /**
+     * Detects an arrow with its tip at {@code (x, y)}.
+     */
     private static final ArtifactDetector DOWN_ARROW = (cm, x, y, cm2svg) -> {
-        CharSequence vs = cm.verticalSection(x);
-        Matcher      m  = Pattern.compile("\\|[^\\-]*v").matcher(vs).region(y, vs.length());
-        if (!m.lookingAt()) return false;
-        cm2svg.arrow(x, y, x, m.end());
-        for (int yy = y; yy < m.end(); yy++) {
-            if ("|v".indexOf(cm.charAt(x, yy)) != -1) cm.charAt(x, yy, ' ');
+        if (cm.charAt(x, y) != 'v') return false;
+        Turtle turtle = cm.new Turtle(x, y, Orientation.NORTH);
+        MatchResult mr = turtle.forward(PATTERN_NEXT_VERTICAL_POLYGON_SEGMENT);
+        if (mr == null) return false;
+        cm.charAt(x, y, ' ');
+        for (int yy = y; yy < turtle.getY(); yy++) {
+            if (cm.charAt(x, yy) == '|') cm.charAt(x, yy, ' ');
         }
+        cm2svg.arrow(turtle.getX(), turtle.getY(), x, y);
+        cookArrowSegments(cm2svg, turtle);
         return true;
     };
     
+    /**
+     * Detects an arrow with its tip at {@code (x, y)}.
+     */
     private static final ArtifactDetector UP_ARROW = (cm, x, y, cm2svg) -> {
-        CharSequence vs = cm.verticalSection(x);
-        Matcher      m  = Pattern.compile("\\^[^\\-]*\\|").matcher(vs).region(y, vs.length());
-        if (!m.lookingAt()) return false;
-        cm2svg.arrow(x, m.end(), x, y);
-        for (int yy = y; yy < m.end(); yy++) {
-            if ("|^".indexOf(cm.charAt(x, yy)) != -1) cm.charAt(x, yy, ' ');
+        if (cm.charAt(x, y) != '^') return false;
+        Turtle turtle = cm.new Turtle(x, y, Orientation.SOUTH);
+        MatchResult mr = turtle.forward(PATTERN_NEXT_VERTICAL_POLYGON_SEGMENT);
+        if (mr == null) return false;
+        cm.charAt(x, y, ' ');
+        for (int yy = y; yy > turtle.getY(); yy--) {
+            if (cm.charAt(x, yy) == '|') cm.charAt(x, yy, ' ');
         }
+        cm2svg.arrow(turtle.getX(), turtle.getY(), x, y);
+        cookArrowSegments(cm2svg, turtle);
         return true;
     };
     
+    /**
+     * Detects an arrow with its tip at {@code (x, y)}.
+     */
     private static final ArtifactDetector LEFT_ARROW = (cm, x, y, cm2svg) -> {
-        CharSequence hs = cm.horizontalSection(y);
-        Matcher      m  = Pattern.compile("<[^\\|]*-").matcher(hs).region(x, hs.length());
-        if (!m.lookingAt()) return false;
-        cm2svg.arrow(m.end(), y, x, y);
-        for (int xx = x; xx < m.end(); xx++) {
-            if ("<-".indexOf(cm.charAt(xx, y)) != -1) cm.charAt(xx, y, ' ');
+        if (cm.charAt(x, y) != '<') return false;
+        Turtle turtle = cm.new Turtle(x, y, Orientation.EAST);
+        MatchResult mr = turtle.forward(PATTERN_NEXT_HORIZONAL_POLYGON_SEGMENT);
+        if (mr == null) return false;
+        cm.charAt(x, y, ' ');
+        for (int xx = x; xx < turtle.getX(); xx++) {
+            if (cm.charAt(xx, y) == '-') cm.charAt(xx, y, ' ');
         }
+        cm2svg.arrow(turtle.getX(), turtle.getY(), x, y);
+        cookArrowSegments(cm2svg, turtle);
         return true;
     };
     
+    /**
+     * Detects an arrow with its tip at {@code (x, y)}.
+     */
     private static final ArtifactDetector RIGHT_ARROW = (cm, x, y, cm2svg) -> {
-        CharSequence hs = cm.horizontalSection(y);
-        Matcher      m  = Pattern.compile("-[^\\|]*>").matcher(hs).region(x, hs.length());
-        if (!m.lookingAt()) return false;
-        cm2svg.arrow(x, y, m.end(), y);
-        for (int xx = x; xx < m.end(); xx++) {
-            if ("->".indexOf(cm.charAt(xx, y)) != -1) cm.charAt(xx, y, ' ');
+        if (cm.charAt(x, y) != '>') return false;
+        Turtle turtle = cm.new Turtle(x, y, Orientation.WEST);
+        MatchResult mr = turtle.forward(PATTERN_NEXT_HORIZONAL_POLYGON_SEGMENT);
+        if (mr == null) return false;
+        cm.charAt(x, y, ' ');
+        for (int xx = x; xx > turtle.getX(); xx--) {
+            if (cm.charAt(xx, y) == '-') cm.charAt(xx, y, ' ');
         }
+        cm2svg.arrow(turtle.getX(), turtle.getY(), x, y);
+        cookArrowSegments(cm2svg, turtle);
         return true;
     };
     
+    private static void
+    cookArrowSegments(CharMatrix2Svg cm2svg, final Turtle turtle) {
+
+        if (turtle.charAt() != '+') return;
+        
+        for (Orientation orientation : Orientation.values()) {
+            if (orientation == turtle.getOrientation().opposite()) continue;
+            final Turtle turtle2 = turtle.clone();
+            turtle2.setOrientation(orientation);
+            MatchResult mr;
+            switch (orientation) {
+            case EAST:
+            case WEST:
+                mr = turtle2.forward(PATTERN_NEXT_HORIZONAL_POLYGON_SEGMENT);
+                if (mr != null) {
+                    cm2svg.line(turtle.getX(), turtle.getY(), turtle2.getX(), turtle2.getY());
+                    cookArrowSegments(cm2svg, turtle2);
+                }
+                break;
+            case NORTH:
+            case SOUTH:
+                mr = turtle2.forward(PATTERN_NEXT_VERTICAL_POLYGON_SEGMENT);
+                if (mr != null) {
+                    cm2svg.line(turtle.getX(), turtle.getY(), turtle2.getX(), turtle2.getY());
+                    cookArrowSegments(cm2svg, turtle2);
+                }
+                break;
+            }
+        }
+    }
+
     private final PrintWriter pw;
     private int               currentXOffset = 5, currentYOffset = 1;
     
@@ -290,6 +363,64 @@ class CharMatrix2Svg {
         this.pw.printf("\" style=\"fill:none;stroke:black;stroke-width:1\" />%n");
     }
 
+    /**
+     * Renders a line starting at {@code (x1, y1)} and ending at {@code (x2, y2)}.
+     */
+    private void
+    line(int x1, int y1, int x2, int y2) {
+        
+        int x1px = x2px(x1);
+        int y1px = y2px(y1);
+        int x2px = x2px(x2);
+        int y2px = y2px(y2);
+        
+        if (x1 == x2) {
+            if (y2 > y1) {
+                
+                // Downward line.
+                x1px += cellWidth;
+                y1px -= cellHeight / 2;
+                x2px += cellWidth;
+                y2px -= cellHeight / 2;
+            } else {
+                
+                // Upward line
+                x1px += cellWidth;
+                y1px += cellHeight / 2;
+                x2px += cellWidth;
+                y2px -= cellHeight / 2;
+            }
+        }
+        
+        if (y1 == y2) {
+            if (x2 > x1) {
+                
+                // Right line.
+                x1px -= cellWidth / 2;
+                y1px += cellHeight / 2;
+                x2px -= cellWidth * 2;
+                y2px += cellHeight / 2;
+            } else {
+                
+                // Left line.
+                x1px += cellWidth / 2;
+                y1px += cellHeight / 2;
+                x2px += cellWidth * 2;
+                y2px += cellHeight / 2;
+            }
+        }
+        pw.printf(
+            "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" style=\"stroke:rgb(220,220,220);stroke-width:4\" />%n",
+            x1px,
+            y1px,
+            x2px,
+            y2px
+        );
+    }
+
+    /**
+     * Renders an arrow starting at {@code (x1, y1)} and ending with a tip at {@code (x2, y2)}.
+     */
     private void
     arrow(int x1, int y1, int x2, int y2) {
         
@@ -301,16 +432,16 @@ class CharMatrix2Svg {
         if (x1 == x2) {
             if (y2 > y1) {
                 
-                // Dowward arrow.
+                // Downward arrow.
                 x1px += cellWidth;
                 y1px -= cellHeight / 2;
                 x2px += cellWidth;
-                y2px -= cellHeight / 2;
+                y2px += cellHeight / 2;
             } else {
                 
                 // Upward arrow
                 x1px += cellWidth;
-                y1px += cellHeight / 2;
+                y1px += 3 * cellHeight / 2;
                 x2px += cellWidth;
                 y2px += cellHeight / 2;
             }
@@ -320,14 +451,14 @@ class CharMatrix2Svg {
             if (x2 > x1) {
                 
                 // Right arrow.
-                x1px -= cellWidth / 2;
+                x1px += cellWidth;
                 y1px += cellHeight / 2;
-                x2px -= cellWidth * 2;
+                x2px -= cellWidth;
                 y2px += cellHeight / 2;
             } else {
                 
                 // Left arrow.
-                x1px += cellWidth / 2;
+                x1px += cellWidth;
                 y1px += cellHeight / 2;
                 x2px += cellWidth * 2;
                 y2px += cellHeight / 2;
@@ -379,5 +510,6 @@ class CharMatrix2Svg {
                 }
             }
         }
+        System.currentTimeMillis(); // TODO TMP
     }
 }

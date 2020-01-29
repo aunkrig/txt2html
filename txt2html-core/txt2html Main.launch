@@ -9,7 +9,7 @@
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_EXCLUDE_TEST_CODE" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.unkrig.txt2html.Main"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="C:\dev\workspaces\janino\gh-pages\apidocs\index.html&#13;&#10;C:\dev\workspaces\janino\gh-pages\apidocs\index-cooked.html"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="../gh-pages/apidocs/index-orig.html&#13;&#10;../gh-pages/apidocs/index-cooked.html"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="txt2html-core"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 </launchConfiguration>

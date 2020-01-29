@@ -37,8 +37,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.unkrig.commons.io.Readers;
-import de.unkrig.txt2html.CharMatrix;
 import de.unkrig.txt2html.CharMatrix2Svg;
+import de.unkrig.txt2html.text.CharMatrix;
 
 public
 class CharMatrix2SvgTest {
