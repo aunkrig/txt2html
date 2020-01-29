@@ -55,8 +55,8 @@ import de.unkrig.commons.lang.ObjectUtil;
 import de.unkrig.commons.lang.protocol.PredicateUtil;
 import de.unkrig.commons.text.pattern.Glob;
 import de.unkrig.commons.text.pattern.PatternUtil;
-import de.unkrig.txt2html.CharMatrix;
 import de.unkrig.txt2html.CharMatrix2Svg;
+import de.unkrig.txt2html.text.CharMatrix;
 
 @Mojo(name = "txt2html", defaultPhase = LifecyclePhase.PACKAGE)
 public
