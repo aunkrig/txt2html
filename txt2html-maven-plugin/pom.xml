@@ -4,7 +4,7 @@
 
   <groupId>de.unkrig.txt2html</groupId>
   <artifactId>txt2html-maven-plugin</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>maven-plugin</packaging>
 
   <name>txt2html Maven Plugin</name>
@@ -24,7 +24,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>txt2html-core</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
