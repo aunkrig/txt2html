@@ -8,10 +8,12 @@ Currently it recognizes "`|-+`"-based boxes and "`<>^v-|`"-based arrows.
 
 It comes as a Java library
 
+    // Get the .jar file from https://oss.sonatype.org/#nexus-search;quick~txt2html-core
     public static Writer de.unkrig.txt2html.Txt2SvgFilterWriter.make(Writer)
 
 , a command line tool
 
+    // Get the .jar file from https://oss.sonatype.org/#nexus-search;quick~txt2html-core
     java de.unkrig.txt2html.Main <input-dir-file-or-archive> [ [ ... ] <output-dir-file-or-archive> ]
 
 , a MAVEN plugin
@@ -19,7 +21,7 @@ It comes as a Java library
     <plugin>
       <groupId>de.unkrig.txt2html</groupId>
       <artifactId>txt2html-maven-plugin</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>1.0.0</version>
 
       <executions>
         <execution>
@@ -34,9 +36,10 @@ It comes as a Java library
 
 and an ANT library:
 
+    <!-- Get the -antlib.jar from https://oss.sonatype.org/#nexus-search;quick~txt2html-antlib -->
     <taskdef
       resource="de/unkrig/txt2html/antlib/ant.xml"
-      classpath="path/to/txt2html-antlib-0.0.1-SNAPSHOT-antlib.jar"
+      classpath="path/to/txt2html-antlib-1.0.0-antlib.jar"
     />
 
     <txt2html>
