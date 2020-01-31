@@ -9,7 +9,21 @@
   <artifactId>txt2html-parent</artifactId>
   <version>1.0.0</version>
   <packaging>pom</packaging>
+  <name>txt2html-parent</name>
 
+  <description>Converts text to an HTML document.</description>
+  <url>https://github.com/aunkrig/txt2html</url>
+  <licenses>
+    <license>
+      <name>New BSD License</name>
+      <url>https://raw.githubusercontent.com/janino-compiler/janino/master/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+  	<developerConnection>scm:git:https://github.com/aunkrig/txt2html</developerConnection>
+  	<url>https://aunkrig/txt2html</url>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
