@@ -37,7 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.ProjectComponent;
+import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.resources.FileResource;
@@ -54,7 +54,8 @@ import de.unkrig.commons.nullanalysis.Nullable;
 import de.unkrig.commons.text.pattern.Glob;
 import de.unkrig.txt2html.Txt2SvgFilterWriter;
 
-public class Txt2HtmlTask extends ProjectComponent {
+public
+class Txt2HtmlTask extends Task {
 
     private Charset              charset   = Charset.forName("UTF-8");
     @Nullable private File       tofile    = null;
@@ -80,7 +81,7 @@ public class Txt2HtmlTask extends ProjectComponent {
 
     // ========================= END CONFIGURATION SETTERS =========================
     
-    public void
+    @Override public void
     execute() throws BuildException {
         try {
             this.execute2();
@@ -102,10 +103,18 @@ public class Txt2HtmlTask extends ProjectComponent {
             
             @Override public void
             transform(String path, InputStream is, OutputStream os) throws IOException {
-                IoUtil.copy(
-                    new InputStreamReader(is, Txt2HtmlTask.this.charset),                           // reader
-                    Txt2SvgFilterWriter.make(new OutputStreamWriter(os, Txt2HtmlTask.this.charset)) // writer
-                );
+
+                try {
+                    IoUtil.copy(
+                        new InputStreamReader(is, Txt2HtmlTask.this.charset),                           // reader
+                        Txt2SvgFilterWriter.make(new OutputStreamWriter(os, Txt2HtmlTask.this.charset)) // writer
+                    );
+                } catch (RuntimeException re) {
+                    if (re == FileTransformer.NOT_IDENTICAL) {
+                        Txt2HtmlTask.this.log("Beautifying " + path);
+                    }
+                    throw re;
+                }
             }
         };
 
